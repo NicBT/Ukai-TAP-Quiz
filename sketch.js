@@ -14,6 +14,7 @@ let newQset;
 let twStarted = false;
 let twDone = false;
 let mountains;
+let bkg;
 let ratios = [];
 
 function preload() {
@@ -31,15 +32,15 @@ function preload() {
     loadImage('images/Mtn5.png'),
     loadImage('images/Mtn6.png')
   ];
+  bkg = loadImage('images/Bkg_Flat.png');
 }
 
 function setup() {
   currQ = allQuestions[0][0];
   createCanvas(windowWidth, windowHeight);
-  for (let i = 0; i < mountains.length; i++) {
-    ratios[i] = mountains[i].width / mountains[i].height;
-  }
-
+  // for (let i = 0; i < mountains.length; i++) {
+  //   ratios[i] = mountains[i].width / mountains[i].height;
+  // }
   textFont(font);
   refresh();
   frameRate(30);
@@ -212,9 +213,18 @@ function loadQuestions(allQs) {
 }
 
 function showBkg() {
-  background('#180A05');
+  let ratio = width / height;
+  push();
+  translate(width / 2, height / 2);
+  if (ratio >= 6125 / 4419) {
+    image(bkg, -width / 2, -width / (ratio * 2), width, width / ratio);
+  } else {
+    image(bkg, -height * ratio / 2, -height / 2, height * ratio, height);
+  }
+  pop();
+  // background('#180A05');
 
-  image(mountains[3], 0, 0, width, width / ratios[3]);
-  image(mountains[1], width * 0.25, 0, width * 0.5, width * 0.5 / ratios[1]);
-  image(mountains[2], width * 0.6, 0, width * 0.4, width * 0.4 / ratios[2]);
+  // image(mountains[3], 0, 0, width, width / ratios[3]);
+  // image(mountains[1], width * 0.25, 0, width * 0.5, width * 0.5 / ratios[1]);
+  // image(mountains[2], width * 0.6, 0, width * 0.4, width * 0.4 / ratios[2]);
 }

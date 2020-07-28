@@ -13,9 +13,7 @@ let skipped = 0;
 let newQset;
 let twStarted = false;
 let twDone = false;
-let mountains;
 let bkg;
-let ratios = [];
 
 function preload() {
   font = loadFont('fonts/Barlow/Barlow-Regular.ttf');
@@ -25,15 +23,7 @@ function preload() {
     loadModel('tokens/Devotion.obj', true)
   ];
   loadTable('TAP_Questions.csv', 'csv', 'header', loadQuestions);
-  mountains = [loadImage('images/Mtn0.png'),
-    loadImage('images/Mtn1.png'),
-    loadImage('images/Mtn2.png'),
-    loadImage('images/Mtn3.png'),
-    loadImage('images/Mtn4.png'),
-    loadImage('images/Mtn5.png'),
-    loadImage('images/Mtn6.png')
-  ];
-  bkg = loadImage('images/Bkg_Flat.png');
+  bkg = loadImage('images/Bkg_Flat1080p.png');
 }
 
 function setup() {
@@ -218,14 +208,11 @@ function loadQuestions(allQs) {
 function showBkg() {
   let displayRatio = width / height;
   let imgRatio = bkg.width / bkg.height;
-  push();
-  translate(width / 2, height / 2);
   if (displayRatio >= 6125 / 4419) {
-    image(bkg, -width / 2, -width / (imgRatio * 2), width, width / imgRatio);
+    image(bkg, 0, height / 2 - width / (imgRatio * 2), width, width / imgRatio);
   } else {
-    image(bkg, -height * imgRatio / 2, -height / 2, height * imgRatio, height);
+    image(bkg, width / 2 - height * imgRatio / 2, 0, height * imgRatio, height);
   }
-  pop();
   // background('#180A05');
 
   // image(mountains[3], 0, 0, width, width / ratios[3]);

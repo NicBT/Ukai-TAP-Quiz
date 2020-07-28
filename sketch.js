@@ -19,7 +19,8 @@ let ratios = [];
 
 function preload() {
   font = loadFont('fonts/Barlow/Barlow-Regular.ttf');
-  tokenObjs = [loadModel('tokens/Care.obj', true),
+  tokenObjs = [loadModel('tokens/Capsule.obj', true),
+    loadModel('tokens/Care.obj', true),
     loadModel('tokens/Love.obj', true),
     loadModel('tokens/Devotion.obj', true)
   ];
@@ -70,6 +71,8 @@ function draw() {
     let x = sin(camAngle) * 250;
     tokenGraphic.clear();
     tokenGraphic.camera(x, 0, z, 0, 0, 0, 0, 1, 0);
+    tokenGraphic.model(tokenObjs[0]);
+    tokenGraphic.camera(-x, 0, z, 0, 0, 0, 0, 1, 0);
     tokenGraphic.model(tokenObjs[2]);
     image(tokenGraphic, 0, 0, width, height);
 
@@ -213,13 +216,14 @@ function loadQuestions(allQs) {
 }
 
 function showBkg() {
-  let ratio = width / height;
+  let displayRatio = width / height;
+  let imgRatio = bkg.width / bkg.height;
   push();
   translate(width / 2, height / 2);
-  if (ratio >= 6125 / 4419) {
-    image(bkg, -width / 2, -width / (ratio * 2), width, width / ratio);
+  if (displayRatio >= 6125 / 4419) {
+    image(bkg, -width / 2, -width / (imgRatio * 2), width, width / imgRatio);
   } else {
-    image(bkg, -height * ratio / 2, -height / 2, height * ratio, height);
+    image(bkg, -height * imgRatio / 2, -height / 2, height * imgRatio, height);
   }
   pop();
   // background('#180A05');

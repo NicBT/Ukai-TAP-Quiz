@@ -1,0 +1,42 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+canvas {
+    display: block;
+}
+
+button {
+    padding-top: 3px;
+    padding-bottom: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border: 1.5px solid transparent;
+    font-family: Barlow Thin, sans-serif;
+    font-size: 20px;
+    color: #FFFCDC;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+button:hover {
+    border: dashed 1.5px #CCDBD6;
+    border-radius: 50px;
+}
+
+textarea {
+    resize: none;
+    overflow: auto;
+    color: #FFFCDC;
+    background-color: transparent;
+    outline: none;
+    border-top: none;
+    border-right: none;
+    border-left: none;
+    border-color: #CCDBD6;
+    text-align: right;
+    font-family: Barlow Thin, sans-serif;
+    font-size: 20px;
+}

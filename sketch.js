@@ -1,17 +1,21 @@
 let currCat = 0;
 let allQuestions = [];
+let newQset;
 let currQ;
-let ansLog = {};
+let ansLog = [
+  [],
+  []
+];
 let buttons, skip, input, submit;
 let finished = false;
 let poem;
 let tokenObjs;
+let increment = 0.01;
 let font;
 let tokenGraphic;
 let capColour, objColour;
 let capAngle = 0;
 let skipped = 0;
-let newQset;
 let twStarted = false;
 let twDone = false;
 let bkg;
@@ -54,7 +58,12 @@ function draw() {
 
     // when quiz finished, display token
   } else {
-    capAngle += 0.01;
+    rectMode(CENTER);
+    textAlign(CENTER, CENTER);
+    let textHeight = ceil(textWidth(poem) / width * 0.7) * tsize * 1.25;
+    text(poem, width / 2, 0.8 * height - textHeight / 2, width * 0.7, height);
+
+    capAngle += increment;
     let objAngle = capAngle * 1.33;
     let capZ = cos(capAngle) * 250;
     let capX = sin(capAngle) * 250;
@@ -63,8 +72,9 @@ function draw() {
 
     tokenGraphic.clear();
     push();
-    scale(0.5);
-    translate(width / 2, height / 3);
+    let scl = 0.5;
+    scale(scl);
+    translate(width / 2, 0.8 * height - textHeight - height / 2);
 
     tokenGraphic.pointLight(200, 200, 200, 866, 500, 0);
     tokenGraphic.pointLight(200, 200, 200, -866, 500, 0);
@@ -78,22 +88,20 @@ function draw() {
 
     tokenGraphic.camera(objX, 0, objZ, 0, 0, 0, 0, 1, 0);
     tokenGraphic.ambientMaterial(objColour);
-    tokenGraphic.model(tokenObjs[ansLog[0][2] + 1]);
+    tokenGraphic.model(tokenObjs[ansLog[0][0][2] + 1]);
     image(tokenGraphic, 0, 0, width, height);
     pop();
-
-    rectMode(CENTER);
-    textAlign(CENTER, CENTER);
-    let textHeight = ceil(textWidth(poem) / width * 0.7) * tsize * 1.25;
-    text(poem, width / 2, 0.8 * height - textHeight / 2, width * 0.7, height);
   }
 }
 
 
 function nextQ(ans) {
   // log answer
-  ansLog[currCat] = [currQ.id, ans, currQ.ans.indexOf(ans)];
-  console.log(ansLog);
+  if (currQ.type == 'mc') {
+    ansLog[0].push([currQ.id, ans, currQ.ans.indexOf(ans)]);
+  } else {
+    ansLog[1].push([currQ.id, ans])
+  }
 
   // increment to next Q Category
   currCat += 1;
@@ -174,15 +182,30 @@ function getToken() {
     ['#ffbd59', '#ff8457', '#ffde59', '#e44444'],
     ['#8c52ff', '#03989e', '#38b6ff', '#084d26']
   ]
-  capColour = random(colours[ansLog[0][2]]);
-  objColour = random(colours[ansLog[0][2]])
+  capColour = random(colours[ansLog[0][0][2]]);
+  objColour = random(colours[ansLog[0][0][2]])
 
-  // generate graphic for token
+  // adjust camera rotation speed
+  if (wordCount(ansLog[1][1][1] >= 15)) {
+    increment *= 1;
+  } else if (wordCount(ansLog[1][1][1] >= 8)) {
+    increment *= 1.5;
+  } else {
+    increment *= 2;
+  }
+
+  // adjust camera rotation direction
+  if (wordCount(ansLog[1][1][1] >= 15)) {
+    increment *= 0;
+  } else if (wordCount(ansLog[1][1][1] >= 8)) {
+    increment *= -1;
+  }
+
   tokenGraphic = createGraphics(width, height, WEBGL);
   tokenGraphic.noStroke();
 
   // fill in poem for token
-  poem = 'When we ' + ansLog[0][1] + ' for the last time, I thought about how when the universe ' + ansLog[1][1] + ' the final thread into this ' + ansLog[1][1] + ', it shook and shook and shook and then somewhere along the lines, my grand plan of ' + ansLog[2][1] + ' failed but in it we ' + ansLog[2][1] + '. Most of all, though, I never want you to think: \"' + ansLog[3][1] + '\" Never again.';
+  poem = 'When we ' + 'fill' + ' for the last time, I thought about how when the universe ' + 'fill' + ' the final thread into this ' + 'fill' + ', it shook and shook and shook and then somewhere along the lines, my grand plan of ' + 'fill' + ' failed but in it we ' + 'fill' + '. Most of all, though, I never want you to think: \"' + 'fill' + '\" Never again.';
 
   // set state to completed quiz
   finished = true;
@@ -225,4 +248,8 @@ function showBkg() {
   } else {
     image(bkg, width / 2 - height * imgRatio / 2, 0, height * imgRatio, height);
   }
+}
+
+function wordCount(ans) {
+  return ans.split(" ").length;
 }

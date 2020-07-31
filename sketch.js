@@ -251,5 +251,5 @@ function showBkg() {
 }
 
 function wordCount(ans) {
-  return ans.split(" ").length;
+  return split(ans, " ").length;
 }

@@ -48,7 +48,8 @@ class Question {
     } else if (this.type == 'sa') {
       let input = createElement('textarea');
       input.attribute('placeholder', 'tell me');
-      input.attribute('rows', 1);
+      input.attribute('rows', 3);
+      input.attribute('autofocus', true);
       input.size(width * 0.75);
       input.position(width * 0.95 - input.width, 250 + 1.6 * tsize);
       let submit = createButton('submit');

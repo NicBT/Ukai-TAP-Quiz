@@ -17,7 +17,7 @@ class Question {
     let textRows = ceil(textWidth(this.statement) / boxWidth);
     let boxHeight = textRows * tsize * 1.25;
     if (!twStarted) {
-      typeWriter(this.statement, 0, width * 0.95 - boxWidth, 150, boxWidth, boxHeight, 100);
+      typeWriter(this.statement, 0, width * 0.95 - boxWidth, 150, boxWidth, boxHeight, 150);
     } else {
       text(this.statement, width * 0.95 - boxWidth, 150, boxWidth, boxHeight);
     }

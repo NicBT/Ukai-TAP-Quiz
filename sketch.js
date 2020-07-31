@@ -8,7 +8,8 @@ let poem;
 let tokenObjs;
 let font;
 let tokenGraphic;
-let camAngle = 0;
+let capColour, objColour;
+let capAngle = 0;
 let skipped = 0;
 let newQset;
 let twStarted = false;
@@ -16,25 +17,22 @@ let twDone = false;
 let bkg;
 
 function preload() {
+  bkg = loadImage('images/Bkg_Flat1080p.png');
   font = loadFont('fonts/Barlow/Barlow-Regular.ttf');
   tokenObjs = [loadModel('tokens/Capsule.obj', true),
-    loadModel('tokens/Care.obj', true),
     loadModel('tokens/Love.obj', true),
-    loadModel('tokens/Devotion.obj', true)
+    loadModel('tokens/Devotion.obj', true),
+    loadModel('tokens/Care.obj', true)
   ];
   loadTable('TAP_Questions.csv', 'csv', 'header', loadQuestions);
-  bkg = loadImage('images/Bkg_Flat1080p.png');
 }
 
 function setup() {
   currQ = allQuestions[0][0];
   createCanvas(windowWidth, windowHeight);
-  // for (let i = 0; i < mountains.length; i++) {
-  //   ratios[i] = mountains[i].width / mountains[i].height;
-  // }
   textFont(font);
-  refresh();
   frameRate(30);
+  refresh();
 }
 
 
@@ -56,26 +54,45 @@ function draw() {
 
     // when quiz finished, display token
   } else {
-    camAngle += 0.05;
-    let z = cos(camAngle) * 250;
-    let x = sin(camAngle) * 250;
+    capAngle += 0.01;
+    let objAngle = capAngle * 1.33;
+    let capZ = cos(capAngle) * 250;
+    let capX = sin(capAngle) * 250;
+    let objZ = cos(objAngle) * 250;
+    let objX = -sin(objAngle) * 250;
+
     tokenGraphic.clear();
-    tokenGraphic.camera(x, 0, z, 0, 0, 0, 0, 1, 0);
+    push();
+    scale(0.5);
+    translate(width / 2, height / 3);
+
+    tokenGraphic.pointLight(200, 200, 200, 866, 500, 0);
+    tokenGraphic.pointLight(200, 200, 200, -866, 500, 0);
+    tokenGraphic.pointLight(200, 200, 200, 0, -1000, 0);
+    tokenGraphic.pointLight(200, 200, 200, 0, 0, 1000);
+    tokenGraphic.pointLight(200, 200, 200, 0, 0, -1000);
+
+    tokenGraphic.camera(capX, 0, capZ, 0, 0, 0, 0, 1, 0);
+    tokenGraphic.ambientMaterial(capColour);
     tokenGraphic.model(tokenObjs[0]);
-    tokenGraphic.camera(-x, 0, z, 0, 0, 0, 0, 1, 0);
-    tokenGraphic.model(tokenObjs[2]);
+
+    tokenGraphic.camera(objX, 0, objZ, 0, 0, 0, 0, 1, 0);
+    tokenGraphic.ambientMaterial(objColour);
+    tokenGraphic.model(tokenObjs[ansLog[0][2] + 1]);
     image(tokenGraphic, 0, 0, width, height);
+    pop();
 
     rectMode(CENTER);
     textAlign(CENTER, CENTER);
-    text(poem, width / 2, height / 2, width * 0.7, height);
+    let textHeight = ceil(textWidth(poem) / width * 0.7) * tsize * 1.25;
+    text(poem, width / 2, 0.8 * height - textHeight / 2, width * 0.7, height);
   }
 }
 
 
 function nextQ(ans) {
   // log answer
-  ansLog[currCat] = [currQ.id, ans];
+  ansLog[currCat] = [currQ.id, ans, currQ.ans.indexOf(ans)];
   console.log(ansLog);
 
   // increment to next Q Category
@@ -152,22 +169,17 @@ function refresh() {
 
 
 function getToken() {
+  let colours = [
+    ['#ff9ecf', '#d61c1c', '#e66c7b'],
+    ['#ffbd59', '#ff8457', '#ffde59', '#e44444'],
+    ['#8c52ff', '#03989e', '#38b6ff', '#084d26']
+  ]
+  capColour = random(colours[ansLog[0][2]]);
+  objColour = random(colours[ansLog[0][2]])
 
   // generate graphic for token
   tokenGraphic = createGraphics(width, height, WEBGL);
   tokenGraphic.noStroke();
-  // tokenGraphic.shininess(20);
-  // tokenGraphic.specularMaterial(200);
-  tokenGraphic.ambientLight(100);
-  // tokenGraphic.specularColor(240, 0, 120);
-  tokenGraphic.pointLight(240, 0, 120, 100, -100, -100);
-  tokenGraphic.pointLight(240, 0, 120, -100, 100, 100);
-
-  tokenGraphic.pointLight(0, 240, 240, -100, 100, -100);
-  tokenGraphic.pointLight(0, 240, 240, 100, -100, 100);
-
-  tokenGraphic.pointLight(240, 180, 0, -100, -100, 100);
-  tokenGraphic.pointLight(240, 180, 0, 100, 100, -100);
 
   // fill in poem for token
   poem = 'When we ' + ansLog[0][1] + ' for the last time, I thought about how when the universe ' + ansLog[1][1] + ' the final thread into this ' + ansLog[1][1] + ', it shook and shook and shook and then somewhere along the lines, my grand plan of ' + ansLog[2][1] + ' failed but in it we ' + ansLog[2][1] + '. Most of all, though, I never want you to think: \"' + ansLog[3][1] + '\" Never again.';
@@ -213,9 +225,4 @@ function showBkg() {
   } else {
     image(bkg, width / 2 - height * imgRatio / 2, 0, height * imgRatio, height);
   }
-  // background('#180A05');
-
-  // image(mountains[3], 0, 0, width, width / ratios[3]);
-  // image(mountains[1], width * 0.25, 0, width * 0.5, width * 0.5 / ratios[1]);
-  // image(mountains[2], width * 0.6, 0, width * 0.4, width * 0.4 / ratios[2]);
 }

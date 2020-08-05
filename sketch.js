@@ -10,7 +10,9 @@ let buttons, skip, input, submit;
 let finished = false;
 let poem;
 let tokenObjs;
-let increment = 0.01;
+let increment;
+let scl;
+let objRelScl;
 let font;
 let tokenGraphic;
 let capColour, objColour;
@@ -19,6 +21,7 @@ let skipped = 0;
 let twStarted = false;
 let twDone = false;
 let bkg;
+let results;
 
 function preload() {
   bkg = loadImage('images/Bkg_Flat1080p.png');
@@ -29,6 +32,7 @@ function preload() {
     loadModel('tokens/Care.obj', true)
   ];
   loadTable('TAP_Questions.csv', 'csv', 'header', loadQuestions);
+  results = loadTable('participant_results.csv', 'csv', 'header');
 }
 
 function setup() {
@@ -60,8 +64,8 @@ function draw() {
   } else {
     rectMode(CENTER);
     textAlign(CENTER, CENTER);
-    let textHeight = ceil(textWidth(poem) / width * 0.7) * tsize * 1.25;
-    text(poem, width / 2, 0.8 * height - textHeight / 2, width * 0.7, height);
+    let textHeight = ceil(textWidth(poem) / (width * 0.7)) * tsize * 1.25;
+    text(poem, width / 2, 0.9 * height - textHeight / 2, width * 0.7, height);
 
     capAngle += increment;
     let objAngle = capAngle * 1.33;
@@ -72,9 +76,8 @@ function draw() {
 
     tokenGraphic.clear();
     push();
-    let scl = 0.5;
+    translate(width / 2 - tokenGraphic.width * scl / 2, 0.9 * height - textHeight - height * scl);
     scale(scl);
-    translate(width / 2, 0.8 * height - textHeight - height / 2);
 
     tokenGraphic.pointLight(200, 200, 200, 866, 500, 0);
     tokenGraphic.pointLight(200, 200, 200, -866, 500, 0);
@@ -88,8 +91,9 @@ function draw() {
 
     tokenGraphic.camera(objX, 0, objZ, 0, 0, 0, 0, 1, 0);
     tokenGraphic.ambientMaterial(objColour);
+    tokenGraphic.scale(objRelScl);
     tokenGraphic.model(tokenObjs[ansLog[0][0][2] + 1]);
-    image(tokenGraphic, 0, 0, width, height);
+    image(tokenGraphic, 0, 0, tokenGraphic.width, tokenGraphic.height);
     pop();
   }
 }
@@ -130,11 +134,7 @@ function diffQ() {
   clearAs();
   let index = newQset.indexOf(currQ);
   newQset.splice(index, 1);
-  console.log(skipped);
-  console.log(newQset);
-  console.log(allQuestions[currCat]);
   if (newQset.length == 0) {
-    console.log('no other questions available');
     skipped = 0;
     newQset = [...allQuestions[currCat]];
   }
@@ -177,6 +177,22 @@ function refresh() {
 
 
 function getToken() {
+  // adjust object size
+  scl = map(ansLog[1][0][1].length, 0, 100, 0.1, 0.7, true);
+
+  // adjust camera rotation speed
+  increment = map(ansLog[1][1][1].length, 0, 100, 0.005, 0.5, true);
+
+  // adjust camera rotation direction
+  if (ansLog[1][2][1].length < 40) {
+    increment *= -1;
+  } else if (ansLog[1][2][1].length < 60) {
+    increment = 0;
+  }
+
+  // adjust relative scale of two objects 
+  objRelScl = map(ansLog[1][3][1].length, 0, 100, 0.8, 2, true);
+
   let colours = [
     ['#ff9ecf', '#d61c1c', '#e66c7b'],
     ['#ffbd59', '#ff8457', '#ffde59', '#e44444'],
@@ -185,23 +201,7 @@ function getToken() {
   capColour = random(colours[ansLog[0][0][2]]);
   objColour = random(colours[ansLog[0][0][2]])
 
-  // adjust camera rotation speed
-  if (wordCount(ansLog[1][1][1] >= 15)) {
-    increment *= 1;
-  } else if (wordCount(ansLog[1][1][1] >= 8)) {
-    increment *= 1.5;
-  } else {
-    increment *= 2;
-  }
-
-  // adjust camera rotation direction
-  if (wordCount(ansLog[1][1][1] >= 15)) {
-    increment *= 0;
-  } else if (wordCount(ansLog[1][1][1] >= 8)) {
-    increment *= -1;
-  }
-
-  tokenGraphic = createGraphics(width, height, WEBGL);
+  tokenGraphic = createGraphics(2 * width, height, WEBGL);
   tokenGraphic.noStroke();
 
   // fill in poem for token
@@ -209,6 +209,16 @@ function getToken() {
 
   // set state to completed quiz
   finished = true;
+
+  saveResults();
+}
+
+function saveResults() {
+  // let newRow = results.addRow();
+// newRow.setString('date', String(year()) + '-' + String(month()) + '-' + String(day()));
+// newRow.setString('id', guid());
+// newRow.setString('poem', poem);
+// saveTable()
 }
 
 function loadQuestions(allQs) {
@@ -250,6 +260,11 @@ function showBkg() {
   }
 }
 
-function wordCount(ans) {
-  return split(ans, " ").length;
+function guid() {
+  //https://slavik.meltser.info/the-efficient-way-to-create-guid-uuid-in-javascript-with-explanation/
+  function _p8(s) {
+    var p = (Math.random().toString(16) + "000000000").substr(2, 8);
+    return s ? "-" + p.substr(0, 4) + "-" + p.substr(4, 4) : p;
+  }
+  return _p8() + _p8(true) + _p8(true) + _p8();
 }

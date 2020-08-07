@@ -15,6 +15,7 @@ let twDone = false;
 let quizStarted = false;
 let database, storage;
 let saved = false;
+let saveButton;
 
 
 function preload() {
@@ -101,7 +102,9 @@ function draw() {
       image(tokenGraphic, 0, 0, tokenGraphic.width, tokenGraphic.height);
       pop();
       if (!saved) {
-        saveResults();
+        saveButton.position(width / 2 - saveButton.width / 2, height / 2 + tokenGraphic.height * scl / 2 + textHeight);
+      } else {
+        text('Thank you', width / 2, height / 2 + tokenGraphic.height * scl / 2 + textHeight);
       }
     }
   }
@@ -180,6 +183,9 @@ function getToken() {
 
   // set state to completed quiz
   finished = true;
+
+  saveButton = createButton('Allow TAP to save my token and poem');
+  saveButton.mousePressed(saveResults);
 }
 
 
@@ -211,6 +217,8 @@ function getPoem() {
 
 function saveResults() {
   saved = true;
+  saveButton.remove();
+
   let db = database.ref('responses');
   let screenCap = get(0, 0, width, height);
   let responseData = {

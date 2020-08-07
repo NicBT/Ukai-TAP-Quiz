@@ -63,6 +63,63 @@ class Question {
   }
 }
 
+
+function loadQuestions(allQs) {
+  let numQ = allQs.getRowCount();
+  let numCats = 9;
+
+  // create a blank array entry for each question category (sequence) 
+  for (let i = 0; i < numCats; i++) {
+    allQuestions[i] = [];
+  }
+
+  for (let i = 0; i < numQ; i++) {
+    // if Q is mc, fetch answers, else leave answers as an empty array
+    let answers = [];
+    if (allQs.get(i, 2) == 'mc') {
+      let j = 4;
+      // if cell (i, j) has text, it will return true, if not it'll return false
+      while (allQs.get(i, j)) {
+        answers.push(allQs.get(i, j));
+        j++;
+      }
+    }
+
+    // create question from table information and fetched answers
+    let question = new Question(allQs.get(i, 2), i, allQs.get(i, 3), answers);
+
+    // push question to appropriate question category
+    allQuestions[Number(allQs.get(i, 0))].push(question);
+  }
+}
+
+
+function nextQ(ans) {
+  // log answer
+  if (currQ.type == 'mc') {
+    ansLog[0].push([currQ.id, ans, currQ.ans.indexOf(ans)]);
+  } else {
+    ansLog[1].push([currQ.id, ans])
+  }
+
+  // increment to next Q Category
+  currCat += 1;
+
+  // remove inputs from canvas
+  clearAs();
+
+  // if quiz complete, generate token
+  if (currCat == allQuestions.length) {
+    getToken();
+    return false;
+  }
+
+  // fetch new question and update display
+  currQ = random(allQuestions[currCat]);
+  skipped = 0;
+  refresh();
+}
+
 function typeWriter(sentence, n, x, y, w, h, speed) {
   if (n < (sentence.length)) {
     noLoop();
@@ -77,4 +134,54 @@ function typeWriter(sentence, n, x, y, w, h, speed) {
     loop();
     twDone = true;
   }
+}
+
+
+function diffQ() {
+  if (skipped == 0) {
+    newQset = [...allQuestions[currCat]];
+  }
+  skipped++;
+  clearAs();
+  let index = newQset.indexOf(currQ);
+  newQset.splice(index, 1);
+  if (newQset.length == 0) {
+    skipped = 0;
+    newQset = [...allQuestions[currCat]];
+  }
+  currQ = random(newQset);
+  refresh();
+}
+
+
+function refresh() {
+  twStarted = false;
+  twDone = false;
+  if (currQ.type == 'mc') {
+    [buttons, skip] = currQ.displayA();
+    for (let i = 0; i < currQ.ansQty; i++) {
+      buttons[i].mousePressed(function() {
+        nextQ(currQ.ans[i])
+      });
+    }
+  } else if (currQ.type == 'sa') {
+    [input, submit, skip] = currQ.displayA();
+    submit.mousePressed(function() {
+      nextQ(input.value())
+    });
+  }
+  skip.mousePressed(diffQ);
+}
+
+
+function clearAs() {
+  if (currQ.type == 'mc') {
+    for (let a = 0; a < currQ.ansQty; a++) {
+      buttons[a].remove();
+    }
+  } else if (currQ.type == 'sa') {
+    input.remove();
+    submit.remove();
+  }
+  skip.remove();
 }

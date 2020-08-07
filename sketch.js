@@ -7,7 +7,7 @@ let tsize = 20;
 let poem;
 let bkg, font, audio, tokenObjs, poemFiller;
 let increment, scl, objRelScl;
-let tokenGraphic, capColour, objColour;
+let tokenGraphic, c0, c1, c2, c3, c4;
 let capAngle = 0;
 let skipped = 0;
 let twStarted = false;
@@ -71,7 +71,7 @@ function draw() {
       rectMode(CENTER);
       textAlign(CENTER, CENTER);
       let textHeight = ceil(textWidth(poem) / (width * 0.7)) * tsize * 1.25;
-      text(poem, width / 2, 0.9 * height - textHeight / 2, width * 0.7, height);
+      text(poem, width / 2, height / 2 + tokenGraphic.height * scl / 2, width * 0.7, height);
 
       capAngle += increment;
       let objAngle = capAngle * 1.33;
@@ -82,23 +82,22 @@ function draw() {
 
       tokenGraphic.clear();
       push();
-      translate(width / 2 - tokenGraphic.width * scl / 2, 0.9 * height - textHeight - height * scl);
+      translate(width / 2 - tokenGraphic.width * scl / 2, height / 2 - textHeight / 2 - tokenGraphic.height * scl / 2);
       scale(scl);
 
-      tokenGraphic.pointLight(200, 200, 200, 866, 500, 0);
-      tokenGraphic.pointLight(200, 200, 200, -866, 500, 0);
-      tokenGraphic.pointLight(200, 200, 200, 0, -1000, 0);
-      tokenGraphic.pointLight(200, 200, 200, 0, 0, 1000);
-      tokenGraphic.pointLight(200, 200, 200, 0, 0, -1000);
+      tokenGraphic.pointLight(c0, 866, 500, 0);
+      tokenGraphic.pointLight(c1, -866, 500, 0);
+      tokenGraphic.pointLight(c2, 0, -1000, 0);
+      tokenGraphic.pointLight(c3, 0, 0, 1000);
+      tokenGraphic.pointLight(c4, 0, 0, -1000);
 
       tokenGraphic.camera(capX, 0, capZ, 0, 0, 0, 0, 1, 0);
-      tokenGraphic.ambientMaterial(capColour);
       tokenGraphic.model(tokenObjs[0]);
 
       tokenGraphic.camera(objX, 0, objZ, 0, 0, 0, 0, 1, 0);
-      tokenGraphic.ambientMaterial(objColour);
       tokenGraphic.scale(objRelScl);
       tokenGraphic.model(tokenObjs[ansLog[0][0][2] + 1]);
+
       image(tokenGraphic, 0, 0, tokenGraphic.width, tokenGraphic.height);
       pop();
       if (!saved) {
@@ -161,12 +160,17 @@ function getToken() {
   objRelScl = map(ansLog[1][3][1].length, 0, 100, 0.8, 2, true);
 
   let colours = [
-    ['#ff9ecf', '#d61c1c', '#e66c7b'],
-    ['#ffbd59', '#ff8457', '#ffde59', '#e44444'],
-    ['#8c52ff', '#03989e', '#38b6ff', '#084d26']
+    ['#747060', '#677D6B', '#4B5229', '#B78B80', '#B3A694'],
+    ['#664564', '#8B8EB3', '#CADB4F', '#7D645D', '#FFC8C7'],
+    ['#B39594', '#F4AF9F', '#88ACBF', '#CBB3E5', '#E2C7FF'],
+    ['#254C31', '#E8ED45', '#7695A6', '#9E88BF', '#B0F73B'],
+    ['#D9D559', '#E0C036', '#B3E5C3', '#2125AD', '#C2C73A']
   ]
-  capColour = random(colours[ansLog[0][0][2]]);
-  objColour = random(colours[ansLog[0][0][2]])
+  c0 = color(colours[0][ansLog[0][0][2]]);
+  c1 = color(colours[1][ansLog[0][0][2]]);
+  c2 = color(colours[2][ansLog[0][0][2]]);
+  c3 = color(colours[3][ansLog[0][0][2]]);
+  c4 = color(colours[4][ansLog[0][0][2]]);
 
   tokenGraphic = createGraphics(2 * width, height, WEBGL);
   tokenGraphic.noStroke();
@@ -213,12 +217,14 @@ function saveResults() {
     poem: poem,
     answers: ansLog
   }
-  db.push(responseData);
+  // pushes responseData to the database and stores that new reference in key. Then use getKey() to get the key (id tag) of key (new reference)
+  let key = db.push(responseData);
+  key = key.getKey();
 
   let canvas = document.getElementById('defaultCanvas0');
   let screenShot = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
   let screenShotBlob = dataURLtoBlob(screenShot)
-  let tokenRef = storage.ref('tokens/token.png');
+  let tokenRef = storage.ref('tokens/' + key + '.png');
   tokenRef.put(screenShotBlob);
 }
 

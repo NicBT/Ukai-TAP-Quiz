@@ -1,6 +1,7 @@
 let allQuestions = [];
 let currCat = 0;
 let currQ;
+let newQset;
 let buttons, skip, input, submit;
 
 
@@ -17,7 +18,7 @@ class Question {
     textSize(tsize);
     rectMode(CORNER);
     textAlign(RIGHT);
-    let boxWidth = width * 0.8;
+    let boxWidth = map(width, 400, 2000, 400, 1000);
     let textRows = ceil(textWidth(this.statement) / boxWidth);
     let boxHeight = textRows * tsize * 1.25;
     if (!twStarted) {
@@ -101,9 +102,9 @@ function loadQuestions(allQs) {
 function nextQ(ans) {
   // log answer
   if (currQ.type == 'mc') {
-    ansLog[0].push([currQ.id, ans, currQ.ans.indexOf(ans)]);
+    ansLog[0].push([currQ, ans, currQ.ans.indexOf(ans)]);
   } else {
-    ansLog[1].push([currQ.id, ans])
+    ansLog[1].push([currQ, ans]);
   }
 
   // increment to next Q Category
@@ -142,7 +143,6 @@ function typeWriter(sentence, n, x, y, w, h, speed) {
 
 
 function diffQ() {
-  let newQset;
   if (skipped == 0) {
     newQset = [...allQuestions[currCat]];
   }

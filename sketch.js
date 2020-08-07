@@ -1,38 +1,25 @@
-let currCat = 0;
-let allQuestions = [];
-let newQset;
-let currQ;
 let ansLog = [
   [],
   []
 ];
-let buttons, skip, input, submit;
 let finished = false;
+let tsize = 20;
 let poem;
-let tokenObjs;
-let increment;
-let scl;
-let objRelScl;
-let font;
-let tokenGraphic;
-let capColour, objColour;
+let bkg, font, audio, tokenObjs, poemFiller;
+let increment, scl, objRelScl;
+let tokenGraphic, capColour, objColour;
 let capAngle = 0;
 let skipped = 0;
 let twStarted = false;
 let twDone = false;
-let bkg;
-let results;
-let audio;
-let started = false;
+let quizStarted = false;
 let database, storage;
 let saved = false;
-let poemFiller;
+
 
 function preload() {
   bkg = loadImage('assets/Bkg_Flat1080p.png');
   font = loadFont('fonts/Barlow/Barlow-Regular.ttf');
-  loadTable('TAP_Questions.csv', 'csv', 'header', loadQuestions);
-  results = loadTable('participant_results.csv', 'csv', 'header');
   audio = loadSound('assets/TAP_audio.wav');
   tokenObjs = [loadModel('assets/Capsule.obj', true),
     loadModel('assets/Love.obj', true),
@@ -40,6 +27,7 @@ function preload() {
     loadModel('assets/Care.obj', true)
   ];
   poemFiller = loadTable('TAP_Poem_Filler.csv', 'csv');
+  loadTable('TAP_Questions.csv', 'csv', 'header', loadQuestions);
 }
 
 function setup() {
@@ -62,7 +50,7 @@ function setup() {
 
 
 function draw() {
-  if (started) {
+  if (quizStarted) {
     fill('#FFFCDC');
     resizeCanvas(windowWidth, windowHeight);
     showBkg();
@@ -140,7 +128,7 @@ function startQuiz(startButton, aboutButton) {
   audio.setVolume(0.5);
   audio.play();
   audio.setLoop(true);
-  started = true;
+  quizStarted = true;
   currQ = allQuestions[0][0];
   refresh();
   loop();
@@ -190,6 +178,7 @@ function getToken() {
   finished = true;
 }
 
+
 function getPoem() {
   let numBlanks = poemFiller.getRowCount();
   let fillers = [];
@@ -233,15 +222,6 @@ function saveResults() {
   tokenRef.put(screenShotBlob);
 }
 
-
-function guid() {
-  //https://slavik.meltser.info/the-efficient-way-to-create-guid-uuid-in-javascript-with-explanation/
-  function _p8(s) {
-    var p = (Math.random().toString(16) + "000000000").substr(2, 8);
-    return s ? "-" + p.substr(0, 4) + "-" + p.substr(4, 4) : p;
-  }
-  return _p8() + _p8(true) + _p8(true) + _p8();
-}
 
 function initFirebase() {
   // Your web app's Firebase configuration

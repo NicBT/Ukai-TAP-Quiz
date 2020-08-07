@@ -1,4 +1,8 @@
-let tsize = 20;
+let allQuestions = [];
+let currCat = 0;
+let currQ;
+let buttons, skip, input, submit;
+
 
 class Question {
   constructor(tempType, tempID, tempStatement, tempAns = []) {
@@ -138,6 +142,7 @@ function typeWriter(sentence, n, x, y, w, h, speed) {
 
 
 function diffQ() {
+  let newQset;
   if (skipped == 0) {
     newQset = [...allQuestions[currCat]];
   }

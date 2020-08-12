@@ -18,7 +18,7 @@ class Question {
     textSize(tsize);
     rectMode(CORNER);
     textAlign(RIGHT);
-    let boxWidth = map(width, 400, 2000, 400, 1000);
+    let boxWidth = map(width, 400, 2000, 400, 500);
     let textRows = ceil(textWidth(this.statement) / boxWidth);
     let boxHeight = textRows * tsize * 1.25;
     if (!twStarted) {

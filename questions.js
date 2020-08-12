@@ -71,7 +71,7 @@ class Question {
 
 function loadQuestions(allQs) {
   let numQ = allQs.getRowCount();
-  let numCats = 10;
+  let numCats = max(allQs.getColumn('Sequence')) + 1;
 
   // create a blank array entry for each question category (sequence) 
   for (let i = 0; i < numCats; i++) {

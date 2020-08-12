@@ -219,7 +219,7 @@ function saveResults() {
   saved = true;
   saveButton.remove();
 
-  let db = database.ref('responses');
+  let db = database.ref();
   let screenCap = get(0, 0, width, height);
   let responseData = {
     poem: poem,
@@ -271,12 +271,6 @@ function dataURLtoBlob(dataURL) {
   for (var i = 0; i < byteString.length; i++) {
     ia[i] = byteString.charCodeAt(i);
   }
-
-  //Old Code
-  //write the ArrayBuffer to a blob, and you're done
-  //var bb = new BlobBuilder();
-  //bb.append(ab);
-  //return bb.getBlob(mimeString);
 
   //New Code
   return new Blob([ab], { type: mimeString });

@@ -81,8 +81,8 @@ function loadQuestions(allQs) {
   for (let i = 0; i < numQ; i++) {
     // if Q is mc, fetch answers, else leave answers as an empty array
     let answers = [];
-    if (allQs.get(i, 2) == 'mc') {
-      let j = 4;
+    if (allQs.get(i, 1) == 'mc') {
+      let j = 3;
       // if cell (i, j) has text, it will return true, if not it'll return false
       while (allQs.get(i, j)) {
         answers.push(allQs.get(i, j));
@@ -91,7 +91,7 @@ function loadQuestions(allQs) {
     }
 
     // create question from table information and fetched answers
-    let question = new Question(allQs.get(i, 2), i, allQs.get(i, 3), answers);
+    let question = new Question(allQs.get(i, 1), i, allQs.get(i, 2), answers);
 
     // push question to appropriate question category
     allQuestions[Number(allQs.get(i, 0))].push(question);

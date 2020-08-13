@@ -1,8 +1,10 @@
-// TO DO
+// TO-DO
 // make questions fade in
 // make answers fade in after question finishes fading in
-
-
+// make poem right aligned and width / 4
+// make token the same height as the poem and left of the poem
+// change saveResults to just be a download of the token (your token of devotion) and poem (your poem of devotion)
+// try puttin in the video background
 
 
 let ansLog = [
@@ -10,7 +12,7 @@ let ansLog = [
   []
 ];
 let finished = false;
-let tsize = 20;
+let tsize = 25;
 let poem;
 let bkg, font, audio, tokenObjs, poemFiller;
 let increment, scl, objRelScl;
@@ -19,7 +21,8 @@ let capAngle = 0;
 let skipped = 0;
 let twStarted = false;
 let twDone = false;
-let quizStarted = false;
+let quizActive = false;
+let promise;
 let database, storage;
 let saved = false;
 let saveButton;
@@ -58,21 +61,22 @@ function setup() {
 
 
 function draw() {
-  if (quizStarted) {
+  if (quizActive) {
     fill('#FFFCDC');
     resizeCanvas(windowWidth, windowHeight);
     showBkg();
 
     // while still in quiz, display question and update button pos for adaptive window
     if (!finished) {
-      if (!twStarted || twDone) {
-        currQ.displayQ();
+      currQ.displayQ();
+
+      buttons[0].position(width * 0.95 - buttons[0].width, 230 + boxHeight);
+      for (let i = 1; i < this.ansQty; i++) {
+        buttons[i].position(width * 0.95 - buttons[i].width, buttons[i - 1].position().y + buttons[i - 1].height);
       }
-      let i;
-      for (i = 0; i < buttons.length; i++) {
-        buttons[i].position(width * 0.95 - buttons[i].width, 250 + 1.6 * i * tsize);
+      if (currQ != allQuestions[0][0]) {
+        skip.position(width * 0.95 - skip.width, 0.8 * height);
       }
-      skip.position(width * 0.95 - skip.width, 300 + 1.6 * i * tsize);
 
       // when quiz finished, display token
     } else {
@@ -108,11 +112,11 @@ function draw() {
 
       image(tokenGraphic, 0, 0, tokenGraphic.width, tokenGraphic.height);
       pop();
-      if (!saved) {
-        saveButton.position(width / 2 - saveButton.width / 2, height / 2 + tokenGraphic.height * scl / 2 + textHeight);
-      } else {
-        text('Thank you', width / 2, height / 2 + tokenGraphic.height * scl / 2 + textHeight);
-      }
+      // if (!saved) {
+      saveButton.position(width / 2 - saveButton.width / 2, height / 2 + tokenGraphic.height * scl / 2 + textHeight);
+      // } else {
+      //   text('Thank you', width / 2, height / 2 + tokenGraphic.height * scl / 2 + textHeight);
+      // }
     }
   }
 }
@@ -137,9 +141,9 @@ function startQuiz(startButton, aboutButton) {
   audio.setVolume(0.5);
   audio.play();
   audio.setLoop(true);
-  quizStarted = true;
   currQ = allQuestions[0][0];
   refresh();
+  quizActive = true;
   loop();
 }
 
@@ -149,6 +153,63 @@ function aboutPage(startButton, aboutButton) {
   aboutButton.remove();
   showBkg();
   text('here are the credits and the FAQ', width / 2 - textWidth('here are the credits and the FAQ') / 2, height / 2);
+}
+
+
+function interstitialPage() {
+  quizActive = false;
+  showBkg();
+  textSize(tsize);
+  rectMode(CORNER);
+  textAlign(RIGHT);
+
+  let messages = [
+    'Beginnings have always been easy. For something to start, a choice must be made. By the both of you.',
+    'Middles are always the hardest. They’re longer than most parts. They’re hard and lonely and lovely and so jarring that you feel like the earth might shift from underneath you and leave the both of you behind.',
+    'Sometimes you don’t even notice a middle until you get to the end. Then you’re here. You wonder if you’re ever going to be able to go back. Just know. That no matter what, we shared this existence in the same moment.',
+    'Your devotion and your love and your care. They’ve always been here. You’ve carried them through every choice you’ve ever made and every one you didn\'t make. You’ve tried the best you can. I know that. Do you?',
+    'I want to give you something. We made it together. I don’t need anything in return, but when you wake up, I hope you remember this.'
+  ];
+  let message;
+
+  switch (currCat) {
+    case 0:
+      message = messages[0];
+      break;
+    case 3:
+      message = messages[1];
+      break;
+    case 6:
+      message = messages[2];
+      break;
+    case 9:
+      message = messages[3];
+      break;
+    case 10:
+      message = messages[4];
+      break;
+  }
+
+  if (width > 400) {
+    boxWidth = width / 2;
+  } else {
+    boxWidth = width * 0.9;
+  }
+  let textRows = ceil(textWidth(message) / boxWidth);
+  boxHeight = textRows * tsize;
+
+  textLeading(25);
+  text(message, width * 0.95 - boxWidth, 200, boxWidth, boxHeight * 1.1);
+
+  let proceed = createButton('I want to know more');
+  proceed.position(width * 0.95 - proceed.width, 230 + boxHeight);
+  promise = new Promise(function(resolve, reject) {
+    proceed.mousePressed(function() {
+      proceed.remove();
+      quizActive = true;
+      resolve("done");
+    });
+  });
 }
 
 
@@ -191,7 +252,7 @@ function getToken() {
   // set state to completed quiz
   finished = true;
 
-  saveButton = createButton('Allow TAP to save my token and poem');
+  saveButton = createButton('can I keep this gift forever?');
   saveButton.mousePressed(saveResults);
 }
 
@@ -223,44 +284,43 @@ function getPoem() {
 
 
 function saveResults() {
-  saved = true;
-  saveButton.remove();
+  // saved = true;
+  // saveButton.remove();
 
-  let db = database.ref();
-  let screenCap = get(0, 0, width, height);
-  let responseData = {
-    poem: poem,
-    answers: ansLog
-  }
-  // pushes responseData to the database and stores that new reference in key. Then use getKey() to get the key (id tag) of key (new reference)
-  let key = db.push(responseData);
-  key = key.getKey();
+  // let db = database.ref();
+  // let screenCap = get(0, 0, width, height);
+  // let responseData = {
+  //   poem: poem,
+  //   answers: ansLog
+  // }
+  // // pushes responseData to the database and stores that new reference in key. Then use getKey() to get the key (id tag) of key (new reference)
+  // let key = db.push(responseData);
+  // key = key.getKey();
 
-  let canvas = document.getElementById('defaultCanvas0');
-  let screenShot = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
-  let screenShotBlob = dataURLtoBlob(screenShot)
-  let tokenRef = storage.ref('tokens/' + key + '.png');
-  tokenRef.put(screenShotBlob);
+  // let canvas = document.getElementById('defaultCanvas0');
+  // let screenShot = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+  // let screenShotBlob = dataURLtoBlob(screenShot)
+  // let tokenRef = storage.ref('tokens/' + key + '.png');
+  // tokenRef.put(screenShotBlob);
 }
 
 
 function initFirebase() {
   // Your web app's Firebase configuration
-  let firebaseConfig = {
-    apiKey: "AIzaSyAs_sYZoIfjPFpFUP8Z5z89LqDgFAfGvYU",
-    authDomain: "tokens-of-devotion.firebaseapp.com",
-    databaseURL: "https://tokens-of-devotion.firebaseio.com",
-    projectId: "tokens-of-devotion",
-    storageBucket: "tokens-of-devotion.appspot.com",
-    messagingSenderId: "104095374730",
-    appId: "1:104095374730:web:d3cafbe83093f870153c73",
-    measurementId: "G-742JW5LVXC"
-  };
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  firebase.analytics();
-  database = firebase.database();
-  storage = firebase.storage();
+  // let firebaseConfig = {//   apiKey: "AIzaSyAs_sYZoIfjPFpFUP8Z5z89LqDgFAfGvYU",
+  //   authDomain: "tokens-of-devotion.firebaseapp.com",
+  //   databaseURL: "https://tokens-of-devotion.firebaseio.com",
+  //   projectId: "tokens-of-devotion",
+  //   storageBucket: "tokens-of-devotion.appspot.com",
+  //   messagingSenderId: "104095374730",
+  //   appId: "1:104095374730:web:d3cafbe83093f870153c73",
+  //   measurementId: "G-742JW5LVXC"
+  // };
+  // // Initialize Firebase
+  // firebase.initializeApp(firebaseConfig);
+  // firebase.analytics();
+  // database = firebase.database();
+  // storage = firebase.storage();
 }
 
 

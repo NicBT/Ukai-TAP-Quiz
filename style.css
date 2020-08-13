@@ -14,8 +14,11 @@ button {
     padding-left: 8px;
     padding-right: 8px;
     border: 1.5px solid transparent;
+    max-width: 60vw;
     font-family: Barlow Thin, sans-serif;
-    font-size: 20px;
+    font-size: 25px;
+    line-height: 25px;
+    text-align: right;
     color: #FFFCDC;
     background-color: transparent;
     cursor: pointer;
@@ -39,5 +42,6 @@ textarea {
     border-color: #CCDBD6;
     text-align: right;
     font-family: Barlow Thin, sans-serif;
-    font-size: 20px;
+    font-size: 25px;
+    line-height: 25px;
 }

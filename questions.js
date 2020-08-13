@@ -3,6 +3,7 @@ let currCat = 0;
 let currQ;
 let newQset;
 let buttons, skip, input, submit;
+let boxWidth, boxHeight;
 
 
 class Question {
@@ -18,37 +19,53 @@ class Question {
     textSize(tsize);
     rectMode(CORNER);
     textAlign(RIGHT);
-    let boxWidth = width / 4;
-    let textRows = ceil(textWidth(this.statement) / boxWidth);
-    let boxHeight = textRows * tsize * 1.25;
-    if (!twStarted) {
-      typeWriter(this.statement, 0, width * 0.95 - boxWidth, 150, boxWidth, boxHeight, 150);
+    if (width > 400) {
+      boxWidth = width / 2;
     } else {
-      text(this.statement, width * 0.95 - boxWidth, 150, boxWidth, boxHeight);
+      boxWidth = width * 0.9;
     }
+    let textRows = ceil(textWidth(this.statement) / boxWidth);
+    boxHeight = textRows * tsize;
+
+    textLeading(25);
+    text(this.statement, width * 0.95 - boxWidth, 200, boxWidth, boxHeight * 1.1);
   }
 
   displayA() {
     rectMode(CORNER);
-    let skip = createButton('can you ask me something else?');
-    let boxWidth = width * 0.8;
+    if (currQ != allQuestions[0][0]) {
+      var skip = createButton('can you ask me something else?');
+    }
+
+    if (width > 400) {
+      boxWidth = width / 2;
+    } else {
+      boxWidth = width * 0.9;
+    }
     let textRows = ceil(textWidth(this.statement) / boxWidth);
-    let boxHeight = textRows * tsize * 1.25;
+    boxHeight = textRows * tsize;
 
     if (this.type == 'mc') {
       textSize(tsize);
       textAlign(RIGHT);
+
       let buttons = [];
-      let i;
-      for (i = 0; i < this.ansQty; i++) {
+      for (let i = 0; i < this.ansQty; i++) {
         let button = createButton(this.ans[i]);
-        button.position(width * 0.95 - button.width, 250 + 1.6 * i * tsize);
         append(buttons, button);
       }
-      skip.position(width * 0.95 - skip.width, 250 + 1.6 * i * tsize);
-      skip.style('font-size', tsize + 'px');
 
-      return [buttons, skip];
+      buttons[0].position(width * 0.95 - buttons[0].width, 230 + boxHeight);
+      for (let i = 1; i < this.ansQty; i++) {
+        buttons[i].position(width * 0.95 - buttons[i].width, buttons[i - 1].position().y + buttons[i - 1].height);
+      }
+
+      if (currQ != allQuestions[0][0]) {
+        skip.position(width * 0.95 - skip.width, 0.8 * height);
+        return [buttons, skip];
+      } else {
+        return buttons;
+      }
 
     } else if (this.type == 'sa') {
       let input = createElement('textarea');
@@ -56,14 +73,11 @@ class Question {
       input.attribute('rows', 3);
       input.attribute('autofocus', true);
       input.size(width * 0.75);
-      input.position(width * 0.95 - input.width, 250 + 1.6 * tsize);
-      let submit = createButton('submit');
-      // update below to set y pos with input.position().y and submit.position().y
-      submit.position(width * 0.95 - submit.width, 250 + input.height + 2 * 1.6 * tsize);
-      skip.position(width * 0.95 - skip.width, 250 + input.height + submit.height + 3 * 1.6 * tsize);
+      input.position(width * 0.95 - input.width, 230 + boxHeight);
+      let submit = createButton('does that work for you?');
+      submit.position(width * 0.95 - submit.width, input.position().y + input.height + 2 * tsize);
+      skip.position(width * 0.95 - skip.width, 0.8 * height);
       return [input, submit, skip];
-    } else {
-      console.log('invalid question type');
     }
   }
 }
@@ -99,7 +113,7 @@ function loadQuestions(allQs) {
 }
 
 
-function nextQ(ans) {
+async function nextQ(ans) {
   // log answer
   if (currQ.type == 'mc') {
     ansLog[0].push([currQ, ans, currQ.ans.indexOf(ans)]);
@@ -107,16 +121,19 @@ function nextQ(ans) {
     ansLog[1].push([currQ, ans]);
   }
 
-  // increment to next Q Category
-  currCat += 1;
-
-  // remove inputs from canvas
   clearAs();
+
+  if ([0, 3, 6, 9, 10].includes(currCat)) {
+    interstitialPage();
+    await promise;
+  }
+
+  currCat += 1;
 
   // if quiz complete, generate token
   if (currCat == allQuestions.length) {
     getToken();
-    return false;
+    return;
   }
 
   // fetch new question and update display
@@ -125,21 +142,21 @@ function nextQ(ans) {
   refresh();
 }
 
-function typeWriter(sentence, n, x, y, w, h, speed) {
-  if (n < (sentence.length)) {
-    noLoop();
-    showBkg();
-    twStarted = true;
-    text(sentence.substring(0, n + 1), x, y, w, h);
-    n++;
-    setTimeout(function() {
-      typeWriter(sentence, n, x, y, w, h, speed)
-    }, speed);
-  } else {
-    loop();
-    twDone = true;
-  }
-}
+// function typeWriter(sentence, n, x, y, w, h, speed) {
+//   if (n < (sentence.length)) {
+//     noLoop();
+//     showBkg();
+//     twStarted = true;
+//     text(sentence.substring(0, n + 1), x, y, w, h);
+//     n++;
+//     setTimeout(function() {
+//       typeWriter(sentence, n, x, y, w, h, speed)
+//     }, speed);
+//   } else {
+//     loop();
+//     twDone = true;
+//   }
+// }
 
 
 function diffQ() {
@@ -160,10 +177,12 @@ function diffQ() {
 
 
 function refresh() {
-  twStarted = false;
-  twDone = false;
   if (currQ.type == 'mc') {
-    [buttons, skip] = currQ.displayA();
+    if (currQ != allQuestions[0][0]) {
+      [buttons, skip] = currQ.displayA();
+    } else {
+      buttons = currQ.displayA();
+    }
     for (let i = 0; i < currQ.ansQty; i++) {
       buttons[i].mousePressed(function() {
         nextQ(currQ.ans[i])
@@ -175,7 +194,9 @@ function refresh() {
       nextQ(input.value())
     });
   }
-  skip.mousePressed(diffQ);
+  if (currQ != allQuestions[0][0]) {
+    skip.mousePressed(diffQ);
+  }
 }
 
 
@@ -188,5 +209,7 @@ function clearAs() {
     input.remove();
     submit.remove();
   }
-  skip.remove();
+  if (currQ != allQuestions[0][0]) {
+    skip.remove();
+  }
 }

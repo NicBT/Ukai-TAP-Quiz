@@ -1,12 +1,11 @@
 // TO-DO
 // make questions fade in
 // make answers fade in after question finishes fading in
-// make poem right aligned and width / 4
-// make token the same height as the poem and left of the poem
-// change saveResults to just be a download of the token (your token of devotion) and poem (your poem of devotion)
 // try puttin in the video background
+// fix alignment bug for first set of answers
 
 
+let cnv;
 let ansLog = [
   [],
   []
@@ -44,7 +43,7 @@ function preload() {
 function setup() {
   initFirebase();
 
-  createCanvas(windowWidth, windowHeight);
+  cnv = createCanvas(windowWidth, windowHeight);
   textFont(font);
   textSize(30);
   fill('#FFFCDC');
@@ -81,9 +80,18 @@ function draw() {
       // when quiz finished, display token
     } else {
       rectMode(CENTER);
-      textAlign(CENTER, CENTER);
-      let textHeight = ceil(textWidth(poem) / (width * 0.7)) * tsize * 1.25;
-      text(poem, width / 2, height / 2 + tokenGraphic.height * scl / 2, width * 0.7, height);
+      textAlign(RIGHT, CENTER);
+      textLeading(25);
+
+      if (width > 400) {
+        boxWidth = width / 2;
+      } else {
+        boxWidth = width * 0.9;
+      }
+      let textRows = ceil(textWidth(poem) / boxWidth);
+      boxHeight = textRows * tsize * 1.1;
+
+      text(poem, 0.95 * width - boxWidth / 2, height / 2, boxWidth, boxHeight);
 
       capAngle += increment;
       let objAngle = capAngle * 1.33;
@@ -94,7 +102,8 @@ function draw() {
 
       tokenGraphic.clear();
       push();
-      translate(width / 2 - tokenGraphic.width * scl / 2, height / 2 - textHeight / 2 - tokenGraphic.height * scl / 2);
+      scl = 1.2 * boxHeight / height;
+      translate(0.85 * width - boxWidth / 2 - tokenGraphic.width * scl, height / 2 - tokenGraphic.height * scl / 2);
       scale(scl);
 
       tokenGraphic.pointLight(c0, 866, 500, 0);
@@ -113,7 +122,7 @@ function draw() {
       image(tokenGraphic, 0, 0, tokenGraphic.width, tokenGraphic.height);
       pop();
       // if (!saved) {
-      saveButton.position(width / 2 - saveButton.width / 2, height / 2 + tokenGraphic.height * scl / 2 + textHeight);
+      saveButton.position(width / 2 - saveButton.width / 2, 0.8 * height);
       // } else {
       //   text('Thank you', width / 2, height / 2 + tokenGraphic.height * scl / 2 + textHeight);
       // }
@@ -215,7 +224,7 @@ function interstitialPage() {
 
 function getToken() {
   // adjust object size
-  scl = map(ansLog[1][0][1].length, 0, 100, 0.1, 0.7, true);
+  // scl = map(ansLog[1][0][1].length, 0, 100, 0.1, 0.7, true);
 
   // adjust camera rotation speed
   increment = map(ansLog[1][1][1].length, 0, 100, 0.005, 0.5, true);
@@ -284,6 +293,13 @@ function getPoem() {
 
 
 function saveResults() {
+  saveButton.attribute('opacity', 0);
+  saveCanvas(cnv, 'your token of devotion', 'png');
+  const writer = createWriter('your poem of devotion.txt');
+  writer.print(poem);
+  writer.close();
+  writer.clear();
+  saveButton.attribute('opacity', 1);
   // saved = true;
   // saveButton.remove();
 

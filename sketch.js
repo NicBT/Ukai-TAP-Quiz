@@ -4,7 +4,6 @@
 // try puttin in the video background
 // fix alignment bug for first set of answers
 
-
 let cnv;
 let ansLog = [
   [],
@@ -12,7 +11,7 @@ let ansLog = [
 ];
 let finished = false;
 let tsize = 25;
-let poem;
+let poem, p;
 let bkg, font, audio, tokenObjs, poemFiller;
 let increment, scl, objRelScl;
 let tokenGraphic, c0, c1, c2, c3, c4;
@@ -41,14 +40,16 @@ function preload() {
 }
 
 function setup() {
-  initFirebase();
+  // initFirebase();
+
+  textSize(tsize);
+  textFont(font);
 
   cnv = createCanvas(windowWidth, windowHeight);
-  textFont(font);
-  textSize(30);
-  fill('#FFFCDC');
   showBkg();
-  text('A Token of Devotion', width / 2 - textWidth('A Token of Devotion') / 2, height / 3);
+  let title = createElement('h1', 'A Token of Devotion');
+  title.position(0, height / 4);
+  title.center('horizontal');
   let start = createButton('start');
   start.position(width / 2 - start.width / 2, height / 2);
   let about = createButton('about');
@@ -61,7 +62,6 @@ function setup() {
 
 function draw() {
   if (quizActive) {
-    fill('#FFFCDC');
     resizeCanvas(windowWidth, windowHeight);
     showBkg();
 
@@ -69,7 +69,7 @@ function draw() {
     if (!finished) {
       currQ.displayQ();
 
-      buttons[0].position(width * 0.95 - buttons[0].width, 230 + boxHeight);
+      buttons[0].position(width * 0.95 - buttons[0].width, q.top + q.height);
       for (let i = 1; i < this.ansQty; i++) {
         buttons[i].position(width * 0.95 - buttons[i].width, buttons[i - 1].position().y + buttons[i - 1].height);
       }
@@ -79,19 +79,16 @@ function draw() {
 
       // when quiz finished, display token
     } else {
-      rectMode(CENTER);
-      textAlign(RIGHT, CENTER);
-      textLeading(25);
-
       if (width > 400) {
         boxWidth = width / 2;
       } else {
         boxWidth = width * 0.9;
       }
-      let textRows = ceil(textWidth(poem) / boxWidth);
+      let textRows = ceil(textWidth(p.elt.innerText) / boxWidth);
       boxHeight = textRows * tsize * 1.1;
 
-      text(poem, 0.95 * width - boxWidth / 2, height / 2, boxWidth, boxHeight);
+      p.size(boxWidth, boxHeight);
+      p.position(0.95 * width - p.width, height / 2 - p.height / 2);
 
       capAngle += increment;
       let objAngle = capAngle * 1.33;
@@ -101,10 +98,6 @@ function draw() {
       let objX = -sin(objAngle) * 250;
 
       tokenGraphic.clear();
-      push();
-      scl = 1.2 * boxHeight / height;
-      translate(0.85 * width - boxWidth / 2 - tokenGraphic.width * scl, height / 2 - tokenGraphic.height * scl / 2);
-      scale(scl);
 
       tokenGraphic.pointLight(c0, 866, 500, 0);
       tokenGraphic.pointLight(c1, -866, 500, 0);
@@ -119,8 +112,7 @@ function draw() {
       tokenGraphic.scale(objRelScl);
       tokenGraphic.model(tokenObjs[ansLog[0][0][2] + 1]);
 
-      image(tokenGraphic, 0, 0, tokenGraphic.width, tokenGraphic.height);
-      pop();
+      image(tokenGraphic, 0.95 * width - p.width - tokenGraphic.width / tokenGraphic.height * boxHeight, height / 2 - boxHeight / 2, tokenGraphic.width / tokenGraphic.height * boxHeight, boxHeight);
       // if (!saved) {
       saveButton.position(width / 2 - saveButton.width / 2, 0.8 * height);
       // } else {
@@ -143,8 +135,7 @@ function showBkg() {
 
 
 function startQuiz(startButton, aboutButton) {
-  startButton.remove();
-  aboutButton.remove();
+  removeElements();
   frameRate(30);
   getAudioContext().resume();
   audio.setVolume(0.5);
@@ -153,7 +144,7 @@ function startQuiz(startButton, aboutButton) {
   currQ = allQuestions[0][0];
   refresh();
   quizActive = true;
-  loop();
+  redraw();
 }
 
 
@@ -168,9 +159,6 @@ function aboutPage(startButton, aboutButton) {
 function interstitialPage() {
   quizActive = false;
   showBkg();
-  textSize(tsize);
-  rectMode(CORNER);
-  textAlign(RIGHT);
 
   let messages = [
     'Beginnings have always been easy. For something to start, a choice must be made. By the both of you.',
@@ -207,14 +195,15 @@ function interstitialPage() {
   let textRows = ceil(textWidth(message) / boxWidth);
   boxHeight = textRows * tsize;
 
-  textLeading(25);
-  text(message, width * 0.95 - boxWidth, 200, boxWidth, boxHeight * 1.1);
+  let m = createP(message);
+  m.size(boxWidth, boxHeight);
+  m.position(0.95 * width - m.width, 200);
 
   let proceed = createButton('I want to know more');
   proceed.position(width * 0.95 - proceed.width, 230 + boxHeight);
   promise = new Promise(function(resolve, reject) {
     proceed.mousePressed(function() {
-      proceed.remove();
+      removeElements();
       quizActive = true;
       resolve("done");
     });
@@ -252,17 +241,18 @@ function getToken() {
   c3 = color(colours[3][ansLog[0][0][2]]);
   c4 = color(colours[4][ansLog[0][0][2]]);
 
-  tokenGraphic = createGraphics(2 * width, height, WEBGL);
+  tokenGraphic = createGraphics(2 * width, 2 * height, WEBGL);
   tokenGraphic.noStroke();
 
   // fill in poem for token
-  poem = getPoem();
+  getPoem();
 
   // set state to completed quiz
   finished = true;
 
   saveButton = createButton('can I keep this gift forever?');
   saveButton.mousePressed(saveResults);
+  loop();
 }
 
 
@@ -284,22 +274,22 @@ function getPoem() {
     }
   }
 
-  return 'As we ' + random(fillers[0]) + ' for the last time, I thought about how when the universe ' +
+  p = createP('As we ' + random(fillers[0]) + ' for the last time, I thought about how when the universe ' +
     random(fillers[1]) + ' the final thread into this ' + random(fillers[2]) +
     ', it shook and shook and shook and then somewhere along the lines, my grand plan of ' +
     random(fillers[3]) + ' failed but in it, we ' + random(fillers[4]) + '. Most of all, though, I never want you to think, ' +
-    ansLog[1][ansLog[1].length - 1][1] + '. Never again.'
+    ansLog[1][ansLog[1].length - 1][1] + '. Never again.');
 }
 
 
 function saveResults() {
-  saveButton.attribute('opacity', 0);
+  saveButton.hide();
   saveCanvas(cnv, 'your token of devotion', 'png');
   const writer = createWriter('your poem of devotion.txt');
   writer.print(poem);
   writer.close();
   writer.clear();
-  saveButton.attribute('opacity', 1);
+  saveButton.show();
   // saved = true;
   // saveButton.remove();
 

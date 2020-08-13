@@ -45,3 +45,19 @@ textarea {
     font-size: 25px;
     line-height: 25px;
 }
+
+p {
+    color: #FFFCDC;
+    font-family: Barlow Thin, sans-serif;
+    font-size: 25px;
+    line-height: 25px;
+    text-align: right;
+    margin: 0;
+}
+
+h1 {
+    color: #FFFCDC;
+    font-family: Barlow Thin, sans-serif;
+    font-size: 40px;
+    text-align: center;
+}

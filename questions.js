@@ -4,6 +4,7 @@ let currQ;
 let newQset;
 let buttons, skip, input, submit;
 let boxWidth, boxHeight;
+let q;
 
 
 class Question {
@@ -16,9 +17,6 @@ class Question {
   }
 
   displayQ() {
-    textSize(tsize);
-    rectMode(CORNER);
-    textAlign(RIGHT);
     if (width > 400) {
       boxWidth = width / 2;
     } else {
@@ -27,8 +25,9 @@ class Question {
     let textRows = ceil(textWidth(this.statement) / boxWidth);
     boxHeight = textRows * tsize;
 
-    textLeading(25);
-    text(this.statement, width * 0.95 - boxWidth, 200, boxWidth, boxHeight * 1.1);
+    q = createP(this.statement);
+    q.size(boxWidth, boxHeight);
+    q.position(0.95 * width - q.width, 200);
   }
 
   displayA() {
@@ -55,7 +54,7 @@ class Question {
         append(buttons, button);
       }
 
-      buttons[0].position(width * 0.95 - buttons[0].width, 230 + boxHeight);
+      buttons[0].position(width * 0.95 - buttons[0].width, 250 + boxHeight);
       for (let i = 1; i < this.ansQty; i++) {
         buttons[i].position(width * 0.95 - buttons[i].width, buttons[i - 1].position().y + buttons[i - 1].height);
       }
@@ -121,7 +120,7 @@ async function nextQ(ans) {
     ansLog[1].push([currQ, ans]);
   }
 
-  clearAs();
+  removeElements();
 
   if ([0, 3, 6, 9, 10].includes(currCat)) {
     interstitialPage();
@@ -164,7 +163,7 @@ function diffQ() {
     newQset = [...allQuestions[currCat]];
   }
   skipped++;
-  clearAs();
+  removeElements();
   let index = newQset.indexOf(currQ);
   newQset.splice(index, 1);
   if (newQset.length == 0) {
@@ -197,19 +196,5 @@ function refresh() {
   if (currQ != allQuestions[0][0]) {
     skip.mousePressed(diffQ);
   }
-}
-
-
-function clearAs() {
-  if (currQ.type == 'mc') {
-    for (let a = 0; a < currQ.ansQty; a++) {
-      buttons[a].remove();
-    }
-  } else if (currQ.type == 'sa') {
-    input.remove();
-    submit.remove();
-  }
-  if (currQ != allQuestions[0][0]) {
-    skip.remove();
-  }
+  redraw();
 }

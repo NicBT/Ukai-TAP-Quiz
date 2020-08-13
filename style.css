@@ -22,6 +22,7 @@ button {
     color: #FFFCDC;
     background-color: transparent;
     cursor: pointer;
+    opacity: 0;
 }
 
 button:hover {
@@ -44,6 +45,7 @@ textarea {
     font-family: Barlow Thin, sans-serif;
     font-size: 25px;
     line-height: 25px;
+    opacity: 0;
 }
 
 p {
@@ -53,6 +55,7 @@ p {
     line-height: 25px;
     text-align: right;
     margin: 0;
+    opacity: 0;
 }
 
 h1 {

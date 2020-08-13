@@ -51,9 +51,11 @@ function setup() {
   title.position(0, height / 4);
   title.center('horizontal');
   let start = createButton('start');
+  start.style('opacity', 1);
   start.position(width / 2 - start.width / 2, height / 2);
   let about = createButton('about');
   about.position(width / 2 - about.width / 2, height / 2 + tsize * 3);
+  about.style('opacity', 1);
   start.mousePressed(function() { startQuiz(start, about) });
   about.mousePressed(function() { aboutPage(start, about) })
   noLoop();
@@ -89,6 +91,8 @@ function draw() {
 
       p.size(boxWidth, boxHeight);
       p.position(0.95 * width - p.width, height / 2 - p.height / 2);
+      p.style('opacity', 1);
+      // fadeIn(p);
 
       capAngle += increment;
       let objAngle = capAngle * 1.33;
@@ -198,9 +202,12 @@ function interstitialPage() {
   let m = createP(message);
   m.size(boxWidth, boxHeight);
   m.position(0.95 * width - m.width, 200);
+  fadeIn(m);
 
   let proceed = createButton('I want to know more');
   proceed.position(width * 0.95 - proceed.width, 230 + boxHeight);
+  setTimeout(function() { fadeIn(proceed); }, 3000);
+
   promise = new Promise(function(resolve, reject) {
     proceed.mousePressed(function() {
       removeElements();

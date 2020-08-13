@@ -28,6 +28,8 @@ class Question {
     q = createP(this.statement);
     q.size(boxWidth, boxHeight);
     q.position(0.95 * width - q.width, 200);
+
+    fadeIn(q);
   }
 
   displayA() {
@@ -51,6 +53,7 @@ class Question {
       let buttons = [];
       for (let i = 0; i < this.ansQty; i++) {
         let button = createButton(this.ans[i]);
+        setTimeout(function() { fadeIn(button); }, 3000);
         append(buttons, button);
       }
 
@@ -61,6 +64,7 @@ class Question {
 
       if (currQ != allQuestions[0][0]) {
         skip.position(width * 0.95 - skip.width, 0.8 * height);
+        setTimeout(function() { fadeIn(skip); }, 6000);
         return [buttons, skip];
       } else {
         return buttons;
@@ -75,7 +79,10 @@ class Question {
       input.position(width * 0.95 - input.width, 230 + boxHeight);
       let submit = createButton('does that work for you?');
       submit.position(width * 0.95 - submit.width, input.position().y + input.height + 2 * tsize);
+      setTimeout(function() { fadeIn(input); }, 3000);
+      setTimeout(function() { fadeIn(submit); }, 3000);
       skip.position(width * 0.95 - skip.width, 0.8 * height);
+      setTimeout(function() { fadeIn(skip); }, 6000);
       return [input, submit, skip];
     }
   }
@@ -197,4 +204,15 @@ function refresh() {
     skip.mousePressed(diffQ);
   }
   redraw();
+}
+
+function fadeIn(element) {
+  let op = 0.01;
+  let timer = setInterval(function() {
+    if (op > 1) {
+      clearInterval(timer);
+    }
+    element.style('opacity', op);
+    op *= 1.15;
+  }, 50);
 }

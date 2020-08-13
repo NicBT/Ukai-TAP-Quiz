@@ -258,6 +258,7 @@ function getToken() {
   finished = true;
 
   saveButton = createButton('can I keep this gift forever?');
+  saveButton.style('opacity', 1);
   saveButton.mousePressed(saveResults);
   loop();
 }
